@@ -4,7 +4,7 @@
 # author: Alien(https://www.baidufe.com)
 # github: https://github.com/zxlie
 # ******************************************
-
+curr_dir=`pwd`
 printf "\n\n`date`> 升级Https证书\n"
 
 # 必须 root 账户运行
@@ -21,7 +21,7 @@ openssl_cnf="/etc/ssl/openssl.cnf"
 
 # 安装配置文件
 function install_config(){
-    cat > libs/wsl.cnf.sh <<EOF
+    cat > $curr_dir/libs/wsl.cnf.sh <<EOF
 #!/bin/sh
 
 # ************************ 配置区域 START ******************************
@@ -37,12 +37,12 @@ EOF
 
 # 检查配置文件是否已配置
 function check_config(){
-    if [[ ! -f libs/wsl.cnf.sh ]];then
+    if [[ ! -f $curr_dir/libs/wsl.cnf.sh ]];then
         install_config
     fi
 
     # 载入配置文件
-    source ./libs/wsl.cnf.sh
+    source $curr_dir/libs/wsl.cnf.sh
 
     if [[ ! -d $ssl_dir || ! -d $challenges_dir || -z $websites ]];then
         printf "\n您的配置文件「libs/wsl.cnf.sh」配置不正确或还未进行配置，请检查！\n\n"
@@ -68,7 +68,7 @@ function init(){
 
     # 检查openssl.cnf文件是否存在，不存在则下载一个过来
     if [[ ! -f $openssl_cnf ]];then
-        cp libs/openssl.cnf /etc/ssl/
+        cp $curr_dir/libs/openssl.cnf /etc/ssl/
     fi
 }
 
@@ -95,9 +95,9 @@ function create_pem(){
     fi
 
     # 申请证书crt文件
-    python libs/acme_tiny.py --account-key account.key --csr domain.csr --acme-dir $challenges_dir > signed.crt
+    python $curr_dir/libs/acme_tiny.py --account-key account.key --csr domain.csr --acme-dir $challenges_dir > signed.crt
     # 下载Let’s Encrypt 的中间证书
-    curl -so lets-signed.pem https://letsencrypt.org/certs/lets-encrypt-x1-cross-signed.pem
+    curl -so lets-signed.pem https://letsencrypt.org/certs/lets-encrypt-x3-cross-signed.pem
     # 俩证书合并，得到最终pem文件
     cat signed.crt lets-signed.pem > ssl-encrypt.pem
     rm -rf signed.crt lets-signed.pem
